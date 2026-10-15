@@ -1,0 +1,592 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Wifilab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: navy kopbalk in CVO Focus-stijl, segmentknop voor de 4 onderdelen, links een lijst (hoofdstukken/oefeningen), rechts het werkvlak. */
+:root{
+  --bg:#F2F5F6; --surface:#FFFFFF; --sunk:#E9EFF1; --fg:#1B2433; --muted:#566676;
+  --navy:#203157; --hdr:#203157; --hdr-fg:#FFFFFF; --green:#2E9E46; --green-soft:#E6F4EA;
+  --line:#C9D6DA; --head:#D4DFE2; --ok:#24873B; --ok-soft:#E3F3E7; --bad:#B4421B; --bad-soft:#FBEAE3; --warn:#A86E0C; --warn-soft:#FBF1DC;
+  --focus:#2E9E46;
+  --f-display:"Barlow", "Arial Narrow", Arial, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", Arial, sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F1624; --surface:#172238; --sunk:#111A2C; --fg:#E5EBF2; --muted:#9FB0C2;
+  --navy:#8FB0E8; --hdr:#141F36; --hdr-fg:#F2F5F8; --green:#4CC26A; --green-soft:#16341F;
+  --line:#2E405A; --head:#22314D; --ok:#5BCB78; --ok-soft:#163420; --bad:#F08A63; --bad-soft:#3A1E15; --warn:#E8B04A; --warn-soft:#3A2C12;
+  --focus:#4CC26A; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F1624; --surface:#172238; --sunk:#111A2C; --fg:#E5EBF2; --muted:#9FB0C2;
+  --navy:#8FB0E8; --hdr:#141F36; --hdr-fg:#F2F5F8; --green:#4CC26A; --green-soft:#16341F;
+  --line:#2E405A; --head:#22314D; --ok:#5BCB78; --ok-soft:#163420; --bad:#F08A63; --bad-soft:#3A1E15; --warn:#E8B04A; --warn-soft:#3A2C12;
+  --focus:#4CC26A; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h2{font-size:1.6rem;font-weight:700;color:var(--navy)}
+h3{font-size:1.15rem;font-weight:600;color:var(--navy)}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--hdr);color:var(--hdr-fg)}
+header.top .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:14px}
+.brand{display:flex;align-items:baseline;gap:12px;flex:1 1 auto;min-width:0}
+.brand h1{font-size:1.7rem;font-weight:700;letter-spacing:.01em}
+.brand h1 b{color:#6FD08A;font-weight:700}
+.brand span{font-size:.92rem;opacity:.8}
+.tbtn{background:transparent;border:1px solid rgba(255,255,255,.4);color:var(--hdr-fg);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:.9rem}
+.tbtn:hover{background:rgba(255,255,255,.1)}
+nav.modes{background:var(--surface);border-bottom:1px solid var(--line)}
+nav.modes .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px}
+.mode{border:0;background:transparent;padding:10px 16px;border-radius:8px;cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:1.05rem;color:var(--muted);white-space:nowrap;display:flex;gap:8px;align-items:center}
+.mode[aria-selected="true"]{background:var(--navy);color:var(--surface)}
+.mode:disabled{opacity:.4;cursor:not-allowed}
+.mode .n{font-family:var(--f-body);font-size:.8rem;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--sunk);color:var(--muted)}
+.mode[aria-selected="true"] .n{background:rgba(255,255,255,.18);color:inherit}
+main{padding-block:24px 48px}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:820px){.layout{grid-template-columns:minmax(0,1fr)}}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px;display:flex;flex-direction:column;gap:2px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:820px){.side{position:static;flex-direction:row;overflow-x:auto}}
+.navi{display:flex;align-items:center;gap:10px;justify-content:space-between;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:8px;cursor:pointer;width:100%;min-width:0}
+@media (max-width:820px){.navi{width:auto;flex:0 0 auto}}
+.navi:hover{background:var(--sunk)}
+.navi[aria-current="true"]{background:var(--green-soft);color:var(--fg);font-weight:600}
+.navi .lbl{min-width:0}
+.chip{font-size:.78rem;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;background:var(--sunk);color:var(--muted);font-variant-numeric:tabular-nums}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,3vw,32px);display:flex;flex-direction:column;gap:18px;min-width:0}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:72ch}
+.prose ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.95rem;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--head);color:var(--navy);font-weight:700;font-size:.85rem}
+tr:last-child td{border-bottom:0}
+.learn{background:var(--sunk);border-radius:8px;padding:14px 16px}
+.learn summary{cursor:pointer;font-weight:700;color:var(--navy)}
+.learn .prose{margin-top:10px}
+.qcard{border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:16px}
+.qtext{font-size:1.1rem;display:flex;flex-direction:column;gap:10px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:8px;padding:12px 14px;text-align:left;cursor:pointer;line-height:1.35}
+.opt:hover:not(:disabled){border-color:var(--navy)}
+.opt.sel{border-color:var(--navy);background:var(--sunk)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.numrow input{width:160px;padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--surface)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer;background:var(--navy);color:var(--surface)}
+.btn.green{background:var(--green);color:#fff}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--fg)}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fb{border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.fb.ok{background:var(--ok-soft);border-left:5px solid var(--ok)}
+.fb.no{background:var(--bad-soft);border-left:5px solid var(--bad)}
+.fb.hint{background:var(--warn-soft);border-left:5px solid var(--warn)}
+.fb b.t{font-family:var(--f-display);font-size:1.05rem}
+.prog{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dots{display:flex;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}
+.dot.on{background:var(--ok);border-color:var(--ok)}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-weight:600;font-size:.9rem}
+.field input,.field select,td input,td select{padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);width:100%;min-width:0}
+td input,td select{padding:6px 8px}
+/* dBm-schaal */
+.scale{display:flex;flex-direction:column;gap:4px;max-width:560px}
+.bar{position:relative;display:grid;grid-template-columns:20fr 17fr 8fr 10fr 7fr;height:22px;border-radius:6px;overflow:hidden}
+.bar span{display:block}
+.z1{background:#2E9E46}.z2{background:#7CC36B}.z3{background:#E2B93B}.z4{background:#E07A3A}.z5{background:#B4421B}
+.marker{position:absolute;top:-6px;width:4px;height:34px;background:var(--fg);border-radius:2px;transform:translateX(-2px)}
+.ticks{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.zl{display:grid;grid-template-columns:20fr 17fr 8fr 10fr 7fr;font-size:.75rem;color:var(--muted)}
+.zl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:4px}
+/* kanaalgrafiek */
+.chan{width:100%;height:auto;display:block}
+.report{border:3px solid var(--navy);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;background:var(--surface)}
+.report .big{font-family:var(--f-display);font-size:3rem;font-weight:700;color:var(--navy);line-height:1}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.3rem;font-weight:700;letter-spacing:.12em;background:var(--sunk);padding:4px 10px;border-radius:6px}
+.lock{display:flex;flex-direction:column;gap:8px}
+.lockrow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:8px;flex-wrap:wrap}
+.overlay{position:fixed;inset:0;background:rgba(10,16,30,.55);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:20}
+.dialog{background:var(--surface);border-radius:var(--r);padding:24px;max-width:560px;width:100%;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.ok-t{color:var(--ok);font-weight:700}.bad-t{color:var(--bad);font-weight:700}.warn-t{color:var(--warn);font-weight:700}
+@media (prefers-reduced-motion:no-preference){.qcard,.fb{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="brand"><h1>Wifi<b>lab</b></h1><span>Eenvoudige netwerken · Les 6 · CVO Focus</span></div>
+  <button class="tbtn" id="teacherBtn" type="button">Leerkracht</button>
+</div></header>
+<nav class="modes" aria-label="Onderdelen"><div class="wrap" role="tablist" id="modes">
+  <button class="mode" role="tab" id="m-theory" data-m="theory">Theorie</button>
+  <button class="mode" role="tab" id="m-practice" data-m="practice">Oefenen <span class="n" id="m-practice-n">0/10</span></button>
+  <button class="mode" role="tab" id="m-lab" data-m="lab">Praktijk</button>
+  <button class="mode" role="tab" id="m-test" data-m="test">Eindtoets <span class="n" id="m-test-n">🔒</span></button>
+</div></nav>
+<main><div class="wrap" id="app"></div></main>
+<div id="modal"></div>
+
+<script>
+(()=>{
+'use strict';
+const NEED=2, TEACHER_CODE='2026', SECRET='focus-wifilab-6', KEY='wifilab-les6-v1', PER_EX=3;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const nl=(n,d=0)=>Number(n).toLocaleString('nl-BE',{minimumFractionDigits:d,maximumFractionDigits:d});
+const parseNum=s=>{s=String(s).trim().replace(/\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');return s===''?NaN:Number(s)};
+function hash(str){let h=2166136261>>>0;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}
+  let h2=h^0x5bd1e995;h2=Math.imul(h2^(h2>>>13),0x5bd1e995)>>>0;return ((h>>>0).toString(36).toUpperCase()+(h2>>>0).toString(36).toUpperCase()).replace(/[^A-Z0-9]/g,'').slice(0,8).padEnd(8,'X')}
+const norm=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+
+/* ------------------------------------------------------------------ status */
+let S={mode:'theory',ch:0,ex:0,prog:{},unlocked:false,attempts:0,test:null,lab:null};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let cur=null; // huidige oefenvraag {q, answered, hintShown, ...}
+
+/* ------------------------------------------------------------------ helpers vraag */
+function mc(q,correct,wrongs,expl,hint,extra){
+  const opts=shuffle([correct,...wrongs.filter(w=>w!==correct)]);
+  return Object.assign({type:'mc',q,opts,a:opts.indexOf(correct),expl,hint},extra||{});
+}
+function num(q,answer,tol,unit,expl,hint){return {type:'num',q,a:answer,tol,unit,expl,hint}}
+const BANDS=['2,4 GHz','5 GHz','6 GHz'];
+
+/* dBm */
+const ZONES=[{min:-50,t:'Uitstekend'},{min:-67,t:'Goed'},{min:-75,t:'Matig'},{min:-85,t:'Slecht'},{min:-200,t:'Onbruikbaar'}];
+const ZUSE={Uitstekend:'alles, maximale snelheid',Goed:'streaming, videobellen, gaming',Matig:'surfen en mail; videobellen kan haperen',Slecht:'de verbinding valt af en toe weg',Onbruikbaar:'niets: geen stabiele verbinding'};
+const zoneOf=d=>ZONES.find(z=>d>=z.min).t;
+function scaleHTML(dbm){
+  const pct=dbm==null?null:Math.min(100,Math.max(0,(-30-dbm)/62*100));
+  return `<div class="scale" aria-label="Schaal signaalsterkte"><div class="bar"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span><span class="z5"></span>${pct==null?'':`<i class="marker" style="left:${pct}%"></i>`}</div>
+  <div class="zl"><span>uitstekend</span><span>goed</span><span>matig</span><span>slecht</span><span>onbr.</span></div>
+  <div class="ticks"><span>-30</span><span>-50</span><span>-67</span><span>-75</span><span>-85</span><span>-92 dBm</span></div></div>`;
+}
+
+/* kanaalanalyse 2,4 GHz: overlap als kanalen minder dan 5 uit elkaar liggen */
+function chanLoad(nets,k){let s=0;const hits=[];for(const n of nets){const d=Math.abs(n.ch-k);if(d<5){const w=Math.pow(10,n.dbm/10)*(1-d/5)*(n.w===40?1.5:1);s+=w;hits.push(n)}}return {s,hits}}
+function chanSVG(nets,own){
+  const W=640,H=230,x=c=>40+(c-1)*(W-80)/12;const placed=[];
+  let g=`<svg class="chan" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kanalen op 2,4 GHz">`;
+  for(let c=1;c<=13;c++){g+=`<text x="${x(c)}" y="${H-6}" text-anchor="middle" font-size="12" style="fill:var(--muted)">${c}</text>`}
+  g+=`<line x1="20" y1="${H-22}" x2="${W-20}" y2="${H-22}" style="stroke:var(--line)" stroke-width="1.5"/>`;
+  nets.forEach((n,i)=>{const half=(n.w===40?4:2)*(W-80)/12, h=Math.max(14,(n.dbm+95)*2.1), cx=x(n.ch), y0=H-22;
+    const own_=own&&n.own; const col=own_?'var(--green)':'var(--navy)';
+    g+=`<path d="M${cx-half-14} ${y0} Q${cx-half} ${y0-h} ${cx} ${y0-h} Q${cx+half} ${y0-h} ${cx+half+14} ${y0}" style="fill:${own_?'var(--green)':'var(--navy)'};stroke:${col}" fill-opacity="${own_?.25:.10}" stroke-width="${own_?2.5:1.5}"/>`;
+    let ly=y0-h-6;while(placed.some(p=>Math.abs(p.x-cx)<70&&Math.abs(p.y-ly)<13))ly-=13;placed.push({x:cx,y:ly});g+=`<text x="${cx}" y="${Math.max(12,ly)}" text-anchor="middle" font-size="11" style="fill:var(--fg)">${esc(n.ssid.length>14?n.ssid.slice(0,13)+'…':n.ssid)}</text>`});
+  return g+'</svg>';
+}
+
+/* ------------------------------------------------------------------ data */
+const STD=[
+ {ieee:'802.11b',naam:null,jaar:1999,band:'2,4 GHz',max:'11 Mbit/s'},
+ {ieee:'802.11g',naam:null,jaar:2003,band:'2,4 GHz',max:'54 Mbit/s'},
+ {ieee:'802.11n',naam:'Wi-Fi 4',jaar:2009,band:'2,4 en 5 GHz',max:'600 Mbit/s'},
+ {ieee:'802.11ac',naam:'Wi-Fi 5',jaar:2013,band:'5 GHz',max:'6,9 Gbit/s'},
+ {ieee:'802.11ax',naam:'Wi-Fi 6',jaar:2019,band:'2,4 en 5 GHz',max:'9,6 Gbit/s'},
+ {ieee:'802.11be',naam:'Wi-Fi 7',jaar:2024,band:'2,4, 5 en 6 GHz',max:'46 Gbit/s'}];
+const LBL=s=>s.ieee+(s.naam?` (${s.naam})`:'');
+const FEAT=[['MIMO: meerdere antennes, meerdere datastromen tegelijk','802.11n'],['OFDMA: één kanaal opdelen voor meerdere toestellen tegelijk','802.11ax'],
+ ['Multi-Link Operation (MLO): meerdere banden tegelijk gebruiken','802.11be'],['kanalen van 160 MHz en MU-MIMO in de downlink','802.11ac'],
+ ['kanalen van 320 MHz en 4096-QAM','802.11be'],['54 Mbit/s op de 2,4 GHz-band (OFDM)','802.11g'],['Target Wake Time (TWT) om batterij te sparen','802.11ax']];
+
+const RATE={20:143.4,40:286.8,80:600.4,160:1201}; // Wi-Fi 6, per stream, Mbit/s
+const ROUTERS=[[2,2,80,'AX1800'],[2,2,160,'AX3000'],[2,4,80,'AX3000'],[2,4,160,'AX5400'],[4,4,160,'AX6000']];
+
+const DEV=[['laptop van mama','Hoofdnetwerk','een eigen toestel dat de NAS en printer moet kunnen bereiken'],['NAS met familiefoto’s','Hoofdnetwerk','bevat je eigen bestanden en moet afgeschermd blijven'],
+ ['printer van het gezin','Hoofdnetwerk','de eigen laptops moeten erop kunnen afdrukken'],['gaming-pc van de zoon','Hoofdnetwerk','een eigen, goed beveiligd toestel'],
+ ['smartphone van een bezoeker','Gastnetwerk','een toestel van iemand anders: alleen internet, geen toegang tot je eigen toestellen'],['laptop van een vriend van de zoon','Gastnetwerk','een vreemd toestel kan besmet zijn'],
+ ['tablet van de loodgieter','Gastnetwerk','een vreemd toestel dat alleen internet nodig heeft'],['slimme stekker','IoT-netwerk','IoT-toestellen krijgen zelden updates; apart zetten beperkt de schade bij een lek'],
+ ['deurbelcamera','IoT-netwerk','een IoT-toestel met vaak zwakke beveiliging'],['slimme thermostaat','IoT-netwerk','een IoT-toestel dat alleen met zijn cloud praat'],
+ ['robotstofzuiger','IoT-netwerk','een IoT-toestel; heeft geen toegang tot je pc’s nodig'],['smart-tv','IoT-netwerk','de tv heeft alleen internet nodig en krijgt weinig updates']];
+const NETS=['Hoofdnetwerk','IoT-netwerk','Gastnetwerk'];
+
+const DEVICES=['Access point met kabel','Mesh-systeem','Repeater','Powerline-adapter met wifi','Straalverbinding (point-to-point)','Niets extra nodig'];
+const SCEN=[
+ ['Een appartement van 60 m² op één verdieping. De router staat centraal; overal meet je -50 tot -60 dBm.','Niets extra nodig','Het signaal is overal goed (beter dan -67 dBm). Extra toestellen kosten geld en kunnen zelf storing geven.'],
+ ['Een rijwoning met drie verdiepingen. De familie wil overal één netwerknaam en zonder onderbreking van kamer naar kamer lopen. Kabels trekken kan niet.','Mesh-systeem','Een mesh-systeem maakt één netwerk met één naam; toestellen schakelen automatisch over naar de dichtste node.'],
+ ['Een klaslokaal voor 30 cursisten. In het plafond ligt al een netwerkkabel naar de serverruimte.','Access point met kabel','Met een kabel krijgt het access point de volle snelheid, en via PoE ook stroom. Dat is de beste oplossing als de kabel er al ligt.'],
+ ['Een garage die 60 m van het huis staat, met vrije zichtlijn tussen beide gebouwen. Graven is te duur.','Straalverbinding (point-to-point)','Twee gerichte antennes overbruggen grote afstanden tussen gebouwen als ze elkaar kunnen ‘zien’.'],
+ ['Eén laptop in een logeerkamer op de eerste verdieping heeft zwak signaal. Budget: € 30, en het is maar voor af en toe.','Repeater','Een goedkope repeater lost één dode hoek op. Nadeel: vaak de helft van de snelheid en een aparte netwerknaam.'],
+ ['Het bureau op zolder moet een stabiele verbinding hebben. Een kabel trekken lukt niet, maar het stopcontact zit op dezelfde zekeringkast als de router.','Powerline-adapter met wifi','Powerline gebruikt de stroomkabels als netwerkkabel. Het werkt het best binnen dezelfde elektrische installatie.'],
+ ['Een tuinbureau op 12 m van het huis. Er wordt toch een sleuf gegraven voor de stroom, en videobellen moet stabiel zijn.','Access point met kabel','Leg meteen een buitenkabel (Cat6) mee in de sleuf: een bekabeld access point geeft de stabielste verbinding.'],
+ ['Een kantoor met 15 werkplekken over twee verdiepingen. Overal ligt netwerkkabel en men wil centraal beheer en een gastnetwerk.','Access point met kabel','Zakelijke access points met kabel en PoE, centraal beheerd, met VLAN’s voor het gastnetwerk.']];
+
+const SEC=[
+ ['Welke wifi-beveiliging gebruik je best voor een nieuw netwerk?','WPA3 (of WPA2/WPA3)',['WEP','WPA met TKIP','Open netwerk met verborgen naam'],'WPA3 is de nieuwste en sterkste. WPA2/WPA3 laat ook oudere toestellen verbinden.'],
+ ['Welke beveiliging is in enkele minuten te kraken?','WEP',['WPA2 met AES','WPA3','WPA2/WPA3'],'WEP is al lang gekraakt en mag je nooit meer gebruiken.'],
+ ['Waarom zet je WPS best uit?','De pincode kan snel geraden worden',['WPS vertraagt het netwerk','WPS werkt niet op 5 GHz','WPS verbergt de netwerknaam'],'Met de WPS-pincode kan een aanvaller vaak in enkele uren binnen, ook met een sterk wifi-wachtwoord.'],
+ ['Is een verborgen netwerknaam (SSID) een goede beveiliging?','Nee, een wifi-scanner vindt de naam toch',['Ja, niemand kan het netwerk dan zien','Ja, als je ook WEP gebruikt','Nee, want dan werkt WPA2 niet'],'Toestellen roepen de verborgen naam zelf rond. Een scanner ziet hem meteen.'],
+ ['Is MAC-filtering een goede beveiliging?','Nee, een MAC-adres is eenvoudig na te bootsen',['Ja, een MAC-adres is uniek en geheim','Ja, als het netwerk verborgen is','Nee, want het werkt alleen op 2,4 GHz'],'Toegelaten MAC-adressen zijn met een scanner te zien en een aanvaller kan zijn MAC-adres aanpassen.'],
+ ['Welke versleuteling hoort bij WPA2?','AES (CCMP)',['TKIP','RC4','Geen versleuteling'],'WPA2 gebruikt AES. Zet de modus ‘TKIP’ of ‘TKIP+AES’ uit.'],
+ ['Een 802.11n-laptop verbindt met een netwerk dat WPA met TKIP gebruikt. Wat is de maximale snelheid?','54 Mbit/s',['300 Mbit/s','600 Mbit/s','11 Mbit/s'],'Met TKIP vallen 802.11n-toestellen terug naar de oude 802.11g-snelheden: max. 54 Mbit/s.'],
+ ['Welke beveiliging is verplicht op de 6 GHz-band?','WPA3',['WPA2','WEP','WPA met TKIP'],'Op 6 GHz (Wi-Fi 6E en 7) is alleen WPA3 toegelaten.'],
+ ['Wat wijzig je eerst als je een nieuwe router installeert?','Het standaardwachtwoord van de beheerpagina',['De kleur van de leds','Het IP-adres van je laptop','De naam van de fabrikant'],'Standaardwachtwoorden zoals ‘admin’ staan in elke handleiding op internet.'],
+ ['Waarom houd je de firmware van je router up-to-date?','Om gekende beveiligingslekken te dichten',['Om de wifi-naam te veranderen','Om het internetabonnement sneller te maken','Om WPS aan te zetten'],'Fabrikanten dichten lekken met firmware-updates.'],
+ ['Welk wifi-wachtwoord is het sterkst?','Lange zin van 14+ tekens, zonder namen of jaartallen',['Peeters2015','12345678','De naam van het netwerk'],'Lengte telt het meest. Namen en jaartallen worden eerst geprobeerd.']];
+
+const GUEST=[
+ ['Wat doet ‘client isolation’ op een gastnetwerk?','Gasttoestellen kunnen elkaar niet bereiken',['Gasten krijgen geen internet','Het netwerk wordt onzichtbaar','Gasten krijgen een sneller kanaal'],'Zo kan een besmet toestel van één gast de andere gasten niet aanvallen.'],
+ ['Waarom zet je ‘toegang tot het lokale netwerk’ uit op het gastnetwerk?','Gasten kunnen dan je pc’s, NAS en printer niet bereiken',['Gasten verbruiken dan minder data','Anders werkt WPA3 niet','Dan hoeft er geen wachtwoord op'],'Gasten hebben alleen internet nodig, niet je eigen toestellen.'],
+ ['Wat is een captive portal?','Een startpagina waar je eerst voorwaarden aanvaardt of een code ingeeft',['Een extra antenne voor gasten','Een kabel tussen twee access points','Een app om de wifi te scannen'],'Je kent dit van hotels en stations. In bedrijven en scholen gebruik je het voor het gastnetwerk.'],
+ ['Is Telenet Wi-Free of Proximus Public Wi-Fi op je modem jouw gastnetwerk?','Nee, dat is een publiek netwerk van de provider',['Ja, het is hetzelfde','Ja, maar alleen op 5 GHz','Nee, het is je hoofdnetwerk'],'De provider zendt het uit voor zijn andere klanten. Je gastnetwerk stel je zelf in.'],
+ ['Waarom zet je IoT-toestellen op een apart netwerk?','Ze krijgen zelden updates en zijn vaak het zwakke punt',['Ze werken alleen op 6 GHz','Ze hebben meer snelheid nodig','Anders kunnen ze geen IP-adres krijgen'],'Als een slimme stekker gehackt wordt, kan de aanvaller zo niet aan je pc of NAS.'],
+ ['Wat is een VLAN?','Een apart, logisch gescheiden netwerk op dezelfde switches',['Een extra wifi-band','Een soort netwerkkabel','Een snelheid van 10 Gbit/s'],'Bedrijven zetten het gastnetwerk in een eigen VLAN met een eigen IP-bereik.'],
+ ['Wat is een voordeel van een apart wachtwoord voor het gastnetwerk?','Je kan het wijzigen zonder al je eigen toestellen opnieuw te verbinden',['Het gastnetwerk wordt sneller','Je hebt dan geen beveiliging meer nodig','Gasten zien je NAS beter'],'Wijzig het gastwachtwoord geregeld; je eigen toestellen merken er niets van.']];
+
+const BANDQ=[
+ ['Een slimme stekker in de garage, ver van de router en achter twee muren. Hij stuurt weinig data.','2,4 GHz','2,4 GHz gaat het verst en het best door muren. Weinig data, dus snelheid is niet belangrijk.'],
+ ['Een laptop in dezelfde kamer als een Wi-Fi 6E-router. Je wil grote bestanden zo snel mogelijk kopiëren.','6 GHz','Korte afstand en de hoogste snelheid: 6 GHz heeft de breedste kanalen en de minste storing.'],
+ ['Een smartphone één verdieping boven de Wi-Fi 6-router. Je wil video in HD streamen.','5 GHz','5 GHz combineert een goede snelheid met een redelijk bereik. Een Wi-Fi 6-router heeft geen 6 GHz.'],
+ ['Welke band gaat het verst en het best door muren?','2,4 GHz','Hoe lager de frequentie, hoe groter het bereik.'],
+ ['Op welke band storen microgolfovens en Bluetooth?','2,4 GHz','Microgolfovens werken rond 2,45 GHz, Bluetooth ook op 2,4 GHz.'],
+ ['Op welke band liggen de DFS-kanalen die moeten uitwijken voor radar?','5 GHz','De kanalen 52 – 140 op 5 GHz worden ook door radar gebruikt.'],
+ ['Welke band kan alleen met Wi-Fi 6E en Wi-Fi 7?','6 GHz','De 6 GHz-band is pas sinds Wi-Fi 6E vrijgegeven.'],
+ ['Welke band heeft de hoogste snelheid maar het kortste bereik?','6 GHz','Veel ruimte voor brede kanalen, maar de hoogste frequentie dempt het snelst.']];
+const BANDFACT=[
+ ['Welke kanalen op 2,4 GHz overlappen elkaar niet?','1, 6 en 11',['1, 2 en 3','6, 7 en 8','1, 3 en 5'],'Een kanaal is ± 20 MHz breed, de kanalen liggen maar 5 MHz uit elkaar. Pas vanaf 5 kanalen verschil overlappen ze niet.'],
+ ['Welke kanaalbreedte gebruik je op 2,4 GHz?','20 MHz',['40 MHz','80 MHz','160 MHz'],'Een kanaal van 40 MHz neemt bijna de helft van de 2,4 GHz-band in en overlapt met bijna alle buren.'],
+ ['Hoeveel wifi-kanalen zijn er op 2,4 GHz in Europa?','13',['3','11','24'],'In Europa kanalen 1 t/m 13 (in de VS 1 t/m 11).'],
+ ['Wat is het nadeel van een heel breed kanaal (160 MHz)?','Meer kans op overlap en storing',['Lagere snelheid','Geen beveiliging mogelijk','Werkt niet met WPA3'],'Er passen minder brede kanalen in de band, dus buren overlappen sneller.'],
+ ['Wat is het gevolg als je router op een DFS-kanaal radar detecteert?','Het netwerk valt even weg en wisselt van kanaal',['De router schakelt WPA3 uit','Alle toestellen gaan naar 6 GHz','Niets'],'Het access point moet het kanaal verlaten zodra radar opduikt.']];
+
+const DIAG=[
+ ['De laptop in het tuinbureau meet -84 dBm en haalt 2 Mbit/s. Met een kabel aan de router haal je 480 Mbit/s (abonnement 500 Mbit/s).','Het signaal is te zwak door afstand en muren',['Het internetabonnement is te traag','De DNS-server werkt niet','De laptop heeft een virus'],'Met kabel is de snelheid in orde, dus het internet is OK. -84 dBm is ‘slecht’.'],
+ ['De wifi in de keuken valt weg telkens als de microgolfoven draait. De smartphone zit op 2,4 GHz.','Storing van de microgolfoven op 2,4 GHz',['Het wachtwoord is te kort','De router staat op WPA3','De smartphone heeft te weinig opslag'],'Microgolfovens stralen rond 2,45 GHz. Op 5 GHz heb je er geen last van.'],
+ ['Wifi-scan: je eigen netwerk staat op kanaal 6 met 40 MHz. Vijf buren gebruiken de kanalen 5 tot 8.','Overlap met de buren: verkeerd kanaal en te breed',['De router is te nieuw','Er zijn te weinig buren','Het signaal is te sterk'],'Kies kanaal 1 of 11 en 20 MHz breedte.'],
+ ['De pc op de tweede verdieping hangt aan een repeater en haalt 11 Mbit/s. De repeater zelf meet -76 dBm van de router.','De repeater staat op een plek met slecht signaal en halveert de snelheid',['De pc heeft te weinig RAM','De router heeft te veel LAN-poorten','Het abonnement is te duur'],'Een repeater kan nooit beter doorgeven dan wat hij zelf ontvangt.'],
+ ['Een oude laptop haalt maximaal 54 Mbit/s naast een nieuwe router. De beveiliging staat op WPA/WPA2 (TKIP+AES).','TKIP beperkt 802.11n-toestellen tot 54 Mbit/s',['De laptop staat te dicht bij de router','De router gebruikt 5 GHz','WPA2 is te traag'],'Zet de beveiliging op WPA2-AES of WPA2/WPA3.'],
+ ['Een laptop met een 802.11n-kaart (2×2) haalt naast een Wi-Fi 6-router 180 Mbit/s. Het abonnement is 1000 Mbit/s.','De wifikaart van de laptop is de zwakste schakel',['De router is defect','Het abonnement is te traag','Het kanaal is te smal voor Wi-Fi 6'],'802.11n met 2 streams haalt max. 300 Mbit/s linksnelheid, in de praktijk veel minder.'],
+ ['Na het opstarten verschijnt het 5 GHz-netwerk pas na een minuut. Soms valt het even weg en staat de router daarna op een ander kanaal (nu kanaal 100).','DFS: de router controleert en ontwijkt radar',['De router is oververhit','Er zijn te veel gasten','De firmware is te nieuw'],'Kanaal 100 is een DFS-kanaal. Kies een kanaal 36 – 48 om dit te vermijden.'],
+ ['Een smartphone vlak naast de router verbindt met ‘Thuis’ (2,4 GHz) en niet met ‘Thuis-5G’.','Twee aparte netwerknamen en band steering staat uit',['De smartphone kan geen 5 GHz','De router heeft geen 2,4 GHz','WPA3 staat aan'],'Geef beide banden dezelfde naam en zet band steering aan.'],
+ ['Bezoekers die verbinden met de wifi kunnen de mappen op de NAS zien.','Er is geen gastnetwerk: bezoekers zitten op het eigen netwerk',['De NAS is te traag','De bezoekers gebruiken 6 GHz','Het kanaal is verkeerd'],'Een gastnetwerk geeft alleen internet en geen toegang tot het eigen netwerk.'],
+ ['Een mesh-node op zolder is draadloos verbonden met de node in de kelder. Op zolder haal je 40 Mbit/s, naast de kelder-node 600 Mbit/s.','De draadloze verbinding tussen de nodes is te zwak (backhaul)',['De zolder heeft te veel stopcontacten','Het internet is te traag','De node op zolder heeft een verkeerd IP-adres'],'Te grote afstand tussen nodes. Plaats een node tussenin of gebruik een kabel (wired backhaul).']];
+
+/* ------------------------------------------------------------------ oefeningen */
+const EX=[
+{id:'std',title:'Wifi-standaarden',learn:`<p>De IEEE legt de standaarden vast (802.11…), de Wi-Fi Alliance geeft ze een eenvoudige naam.</p>
+<div class="tbl"><table><tr><th>IEEE</th><th>Naam</th><th>Jaar</th><th>Band(en)</th><th>Max.</th><th>Nieuw</th></tr>
+<tr><td>802.11b</td><td>—</td><td>1999</td><td>2,4 GHz</td><td>11 Mbit/s</td><td>eerste populaire wifi</td></tr>
+<tr><td>802.11g</td><td>—</td><td>2003</td><td>2,4 GHz</td><td>54 Mbit/s</td><td>OFDM op 2,4 GHz</td></tr>
+<tr><td>802.11n</td><td>Wi-Fi 4</td><td>2009</td><td>2,4 + 5 GHz</td><td>600 Mbit/s</td><td>MIMO, 40 MHz</td></tr>
+<tr><td>802.11ac</td><td>Wi-Fi 5</td><td>2013</td><td>5 GHz</td><td>6,9 Gbit/s</td><td>80/160 MHz, MU-MIMO</td></tr>
+<tr><td>802.11ax</td><td>Wi-Fi 6 / 6E</td><td>2019/20</td><td>2,4 + 5 (+ 6) GHz</td><td>9,6 Gbit/s</td><td>OFDMA, TWT; 6E: 6 GHz</td></tr>
+<tr><td>802.11be</td><td>Wi-Fi 7</td><td>2024</td><td>2,4 + 5 + 6 GHz</td><td>46 Gbit/s</td><td>320 MHz, MLO</td></tr></table></div>`,
+ gen(){const t=rnd(1,5);
+  if(t===1){const s=pick(STD.filter(x=>x.naam));return mc(`Welke IEEE-standaard heet <b>${s.naam}</b>?`,s.ieee,shuffle(STD.map(x=>x.ieee).filter(i=>i!==s.ieee)).slice(0,3),`${s.naam} = ${s.ieee} (${s.jaar}).`,'Wi-Fi 4 is de oudste naam; elke volgende standaard telt er één bij.')}
+  if(t===2){const s=pick(STD.filter(x=>x.naam));return mc(`Welke naam gaf de Wi-Fi Alliance aan <b>${s.ieee}</b>?`,s.naam,['Wi-Fi 4','Wi-Fi 5','Wi-Fi 6','Wi-Fi 7'].filter(n=>n!==s.naam),`${s.ieee} = ${s.naam}.`,'802.11n = Wi-Fi 4, daarna in volgorde: ac, ax, be.')}
+  if(t===3){const [f,ie]=pick(FEAT);const s=STD.find(x=>x.ieee===ie);return mc(`Welke standaard bracht <b>${f}</b>?`,LBL(s),shuffle(STD.filter(x=>x.ieee!==ie).map(LBL)).slice(0,3),`${f}: ${LBL(s)}.`,'Denk aan de volgorde: MIMO (n) → MU-MIMO (ac) → OFDMA (ax) → MLO (be).')}
+  if(t===4){const s=pick(STD);return mc(`Wat is de theoretische maximumsnelheid van <b>${LBL(s)}</b>?`,s.max,shuffle(STD.filter(x=>x!==s).map(x=>x.max)).slice(0,3),`${LBL(s)}: ${s.max}. In de praktijk haal je veel minder.`,'De snelheid stijgt telkens fors: 11 → 54 → 600 Mbit/s → Gbit/s.')}
+  const s=pick(STD.filter(x=>x.ieee!=='802.11n'&&x.ieee!=='802.11ax'));return mc(`Welke band(en) gebruikt <b>${LBL(s)}</b>?`,s.band,['2,4 GHz','5 GHz','2,4 en 5 GHz','2,4, 5 en 6 GHz'].filter(b=>b!==s.band),`${LBL(s)}: ${s.band}.`,'b en g zijn oud (alleen 2,4 GHz); ac is alleen 5 GHz; Wi-Fi 7 gebruikt alle drie.')}},
+{id:'band',title:'Banden en kanalen',learn:`<div class="tbl"><table><tr><th></th><th>2,4 GHz</th><th>5 GHz</th><th>6 GHz</th></tr>
+<tr><td>Bereik</td><td>grootst</td><td>middel</td><td>kortst</td></tr><tr><td>Snelheid</td><td>laagst</td><td>hoog</td><td>hoogst</td></tr>
+<tr><td>Storing</td><td>veel (buren, microgolf, Bluetooth)</td><td>minder (radar: DFS)</td><td>weinig</td></tr>
+<tr><td>Kanalen</td><td>13, niet-overlappend: 1, 6, 11</td><td>± 19 (EU)</td><td>24 (EU)</td></tr></table></div>
+<p>Op 2,4 GHz: kanaal 1, 6 of 11 met 20 MHz breedte. Breder kanaal = sneller, maar meer overlap.</p>`,
+ gen(){if(Math.random()<.55){const [q,a,e]=pick(BANDQ);return mc(q.endsWith('?')?q:q+' <b>Welke band kies je?</b>',a,BANDS.filter(b=>b!==a),e,'Lagere frequentie = verder; hogere frequentie = sneller maar korter bereik.')}
+  const [q,a,w,e]=pick(BANDFACT);return mc(q,a,w,e,'Op 2,4 GHz liggen de kanalen maar 5 MHz uit elkaar, terwijl een kanaal ± 20 MHz breed is.')}},
+{id:'dbm',title:'Signaalsterkte (dBm)',learn:`<p>Signaalsterkte meet je in <b>dBm</b>: een negatief getal. Hoe dichter bij 0, hoe sterker. Elke <b>3 dB</b> minder = de <b>helft</b> van het vermogen, 10 dB minder = 10 keer zwakker.</p>${scaleHTML(null)}`,
+ gen(){const t=rnd(1,3);
+  if(t===1){let d;do{d=-rnd(36,92)}while([-50,-67,-75,-85].includes(d));const z=zoneOf(d);
+    return mc(`Een laptop meet een signaal van <b>${d} dBm</b>. Hoe beoordeel je dat?`,z,ZONES.map(x=>x.t).filter(x=>x!==z).slice(0,4),`${d} dBm is <b>${z.toLowerCase()}</b>: geschikt voor ${ZUSE[z]}.${scaleHTML(d)}`,'Grenzen: -50 / -67 / -75 / -85 dBm.')}
+  if(t===2){const diff=pick([3,6,9,10,20]),f={3:2,6:4,9:8,10:10,20:100}[diff],a=-rnd(40,60),b=a-diff;
+    return num(`Toestel A meet <b>${a} dBm</b>, toestel B meet <b>${b} dBm</b>. Hoeveel keer sterker is het signaal bij A?`,f,0,'keer',`Het verschil is ${diff} dB. ${({3:'3 dB = 2 keer.',6:'Elke 3 dB is ×2: 2 × 2 = 4 keer.',9:'Elke 3 dB is ×2: 2 × 2 × 2 = 8 keer.',10:'10 dB = 10 keer.',20:'10 dB = ×10, dus 20 dB = 10 × 10 = 100 keer.'})[diff]}`,'3 dB = 2 keer, 10 dB = 10 keer.')}
+  const vals=shuffle([-rnd(38,48),-rnd(55,64),-rnd(70,78),-rnd(82,90)]);const best=Math.max(...vals);
+  return mc(`Welke meting is het <b>sterkste</b> signaal?`,best+' dBm',vals.filter(v=>v!==best).map(v=>v+' dBm'),`${best} dBm ligt het dichtst bij 0.`,'Negatieve getallen: -40 is groter dan -80.')}},
+{id:'chan',title:'Kanaal kiezen (wifi-scan)',learn:`<p>Een wifi-scanner toont welke netwerken op welk kanaal zitten. Op 2,4 GHz overlappen kanalen die minder dan 5 uit elkaar liggen. Kies het kanaal (1, 6 of 11) met de <b>minste en zwakste</b> overlappende netwerken. Sterke buren (dicht bij 0 dBm) storen het meest.</p>`,
+ gen(){for(let tries=0;tries<200;tries++){const n=rnd(4,7),nets=[];const names=shuffle(['telenet-4F2A1','Proximus-Home-77B3','Orange-Home-2C','WiFi-Buren','Galaxy-A54','DIRECT-HP-Print','VOO-8812','Wi-Free','Fam.Janssens','Scarlet-55A0']);
+   for(let i=0;i<n;i++){const ch=Math.random()<.7?pick([1,6,11]):rnd(1,13);nets.push({ssid:names[i],ch,dbm:-rnd(45,88),w:Math.random()<.2?40:20})}
+   const L=[1,6,11].map(k=>({k,...chanLoad(nets,k)})).sort((a,b)=>a.s-b.s);if(!(L[0].s<0.35*L[1].s||L[0].s===0&&L[1].s>0))continue;
+   const rows=nets.map(x=>`<tr><td>${esc(x.ssid)}</td><td>${x.ch}</td><td>${x.w} MHz</td><td>${x.dbm} dBm</td></tr>`).join('');
+   const ex=[1,6,11].map(k=>{const r=L.find(x=>x.k===k);return `kanaal ${k}: ${r.hits.length?r.hits.map(h=>`${esc(h.ssid)} (${h.dbm})`).join(', '):'geen overlap'}`}).join('<br>');
+   return mc(`Resultaat van een wifi-scan (2,4 GHz). Op welk kanaal zet je je <b>eigen</b> netwerk?<div class="tbl"><table><tr><th>SSID</th><th>Kanaal</th><th>Breedte</th><th>Signaal</th></tr>${rows}</table></div>${chanSVG(nets)}`,
+    'Kanaal '+L[0].k,['Kanaal 1','Kanaal 6','Kanaal 11'].filter(x=>x!=='Kanaal '+L[0].k),`Beste keuze: <b>kanaal ${L[0].k}</b> met 20 MHz. Overlappende netwerken:<br>${ex}`,'Tel per kanaal (1, 6, 11) de netwerken die minder dan 5 kanalen verschillen. Let vooral op sterke signalen.')}
+  return mc('Welke kanalen overlappen niet op 2,4 GHz?','1, 6 en 11',['1, 2 en 3','5, 6 en 7'],'1, 6 en 11.','')}},
+{id:'speed',title:'Marketingnamen en snelheid',learn:`<p>Een router als <b>AX3000</b>: AX = Wi-Fi 6 (AC = Wi-Fi 5, BE = Wi-Fi 7). Het getal = de <b>som</b> van de maximale snelheden van alle banden.</p>
+<p>Wi-Fi 6, per stream: 20 MHz = 143 · 40 MHz = 287 · 80 MHz = 600 · 160 MHz = 1.201 Mbit/s. Snelheid van een band = streams × snelheid per stream.</p>
+<p>Voorbeeld AX3000: 2,4 GHz 2 × 287 = 574 + 5 GHz 2 × 1.201 = 2.402 → ± 3.000.</p>`,
+ gen(){const t=rnd(1,4);const [s24,s5,w5,name]=pick(ROUTERS);const b24=s24*RATE[40],b5=s5*RATE[w5];
+  if(t===1)return num(`Een Wi-Fi 6-router heeft op 5 GHz <b>${s5} streams</b> en kanalen van <b>${w5} MHz</b>. Wat is de maximale snelheid van die band?`,Math.round(b5),Math.max(2,Math.round(b5*.01)),'Mbit/s',`${s5} × ${nl(RATE[w5],1)} = <b>${nl(b5)} Mbit/s</b>.`,`Per stream op ${w5} MHz: ${nl(RATE[w5],1)} Mbit/s.`);
+  if(t===2)return mc(`Een Wi-Fi 6-router: 2,4 GHz met ${s24} streams (40 MHz), 5 GHz met ${s5} streams (${w5} MHz). Welke marketingnaam krijgt hij?`,name,['AX1800','AX3000','AX5400','AX6000','AX11000'].filter(n=>n!==name).slice(0,3),`${s24} × 287 + ${s5} × ${nl(RATE[w5])} = ${nl(b24)} + ${nl(b5)} ≈ ${nl(b24+b5)} → <b>${name}</b>.`,'Tel de snelheid van beide banden op.');
+  if(t===3){const st=pick([1,2]),w=pick([80,160]);const v=Math.round(st*RATE[w]);return num(`Je smartphone heeft Wi-Fi 6 met <b>${st} stream${st>1?'s':''}</b>. De router gebruikt op 5 GHz kanalen van <b>${w} MHz</b>. Wat is de maximale linksnelheid van je smartphone?`,v,Math.max(2,Math.round(v*.01)),'Mbit/s',`Het toestel bepaalt het aantal streams: ${st} × ${nl(RATE[w],1)} = <b>${nl(v)} Mbit/s</b>. Dat de router meer streams heeft, helpt deze smartphone niet.`,'Kijk naar de streams van het toestel, niet van de router.')}
+  const p=pick([['AX','Wi-Fi 6'],['AC','Wi-Fi 5'],['BE','Wi-Fi 7']]);return mc(`Een router heet <b>${p[0]}${pick(['1900','3000','5400','9300'])}</b>. Welke wifi-standaard is dat?`,p[1],['Wi-Fi 4','Wi-Fi 5','Wi-Fi 6','Wi-Fi 7'].filter(x=>x!==p[1]),`${p[0]} verwijst naar 802.11${p[0].toLowerCase()} = ${p[1]}.`,'De letters zijn het einde van de IEEE-naam: 802.11ac, ax, be.')}},
+{id:'chain',title:'Zwakste schakel',learn:`<p>De snelheid naar internet is nooit hoger dan de <b>traagste schakel</b> in de keten: internetabonnement → WAN-poort van de router → wifi-linksnelheid van het toestel. In de praktijk haal je via wifi ongeveer 50 – 60 % van de linksnelheid.</p>`,
+ gen(){for(;;){const sub=pick([150,300,500,1000,1500]),wan=pick([1000,1000,2500]),link=pick([287,574,867,1201,2402]);const items=[['het internetabonnement',sub],['de WAN-poort van de router',wan],['de wifi-linksnelheid van de laptop',link]];
+   const m=Math.min(sub,wan,link);if(items.filter(x=>x[1]===m).length>1)continue;const w=items.find(x=>x[1]===m);
+   const q=`Abonnement: <b>${nl(sub)} Mbit/s</b> · WAN-poort router: <b>${nl(wan)} Mbit/s</b> · wifi-linksnelheid laptop: <b>${nl(link)} Mbit/s</b>.`;
+   if(Math.random()<.5)return num(q+' Wat is de maximale (theoretische) snelheid van de laptop naar internet?',m,0,'Mbit/s',`De traagste schakel is ${w[0]}: <b>${nl(m)} Mbit/s</b>. In de praktijk via wifi eerder ${nl(Math.round(Math.min(m,link*.6)))} Mbit/s of minder.`,'Neem het kleinste getal.');
+   return mc(q+' Wat is de zwakste schakel?',w[0],items.map(x=>x[0]).filter(x=>x!==w[0]).concat(['de netwerkkabel van de decoder']),`${w[0][0].toUpperCase()+w[0].slice(1)} (${nl(m)} Mbit/s) is het traagst.`,'Zoek het kleinste getal.')}}},
+{id:'sec',title:'Beveiliging',learn:`<p>Open en WEP: onveilig. WPA (TKIP): verouderd. <b>WPA2 (AES)</b>: minimum. <b>WPA3</b>: aanbevolen, verplicht op 6 GHz. Zet WPS uit, wijzig het standaard-beheerwachtwoord en update de firmware. Een verborgen SSID en MAC-filtering zijn geen echte beveiliging.</p>`,
+ gen(){const [q,a,w,e]=pick(SEC);return mc(q,a,w,e,'Hoe nieuwer de beveiliging, hoe beter. ‘Verbergen’ is geen beveiligen.')}},
+{id:'guest',title:'Gastnetwerk en IoT',learn:`<p>Een <b>gastnetwerk</b> geeft bezoekers internet, maar geen toegang tot je eigen toestellen. Zet ook <b>IoT-toestellen</b> (slimme stekkers, camera’s, tv) apart: ze krijgen zelden updates. Instellingen: eigen SSID en wachtwoord, geen LAN-toegang, client isolation, eventueel bandbreedtebeperking en tijdslimiet.</p>`,
+ gen(){if(Math.random()<.55){const [d,n,e]=pick(DEV);return mc(`Op welk netwerk zet je <b>${d}</b>?`,n,NETS.filter(x=>x!==n),`${n}: ${e}.`,'Eigen pc’s en bestanden = hoofdnetwerk. Vreemde toestellen = gast. Slimme apparaten = IoT.')}
+  const [q,a,w,e]=pick(GUEST);return mc(q,a,w,e,'Een gastnetwerk scheidt toestellen die je niet vertrouwt van je eigen toestellen.')}},
+{id:'dev',title:'Apparaat kiezen',learn:`<div class="tbl"><table><tr><th>Apparaat</th><th>Wanneer?</th></tr>
+<tr><td>Access point met kabel</td><td>beste resultaat als er een kabel kan liggen</td></tr><tr><td>Mesh-systeem</td><td>groot huis, één netwerknaam, naadloos roamen</td></tr>
+<tr><td>Repeater</td><td>goedkoop, één dode hoek; halveert vaak de snelheid</td></tr><tr><td>Powerline</td><td>geen kabel mogelijk, zelfde elektrische installatie</td></tr>
+<tr><td>Straalverbinding</td><td>tussen gebouwen met zichtlijn</td></tr></table></div>`,
+ gen(){const [q,a,e]=pick(SCEN);return mc(q+' <b>Wat raad je aan?</b>',a,shuffle(DEVICES.filter(x=>x!==a)).slice(0,3),e,'Kan er een kabel liggen? Dan is dat bijna altijd de beste keuze.')}},
+{id:'diag',title:'Problemen oplossen',learn:`<p>Werk als een technieker: <b>eerst meten, dan besluiten</b>. Test eerst met een kabel aan de router: is het internet zelf in orde? Kijk dan naar signaalsterkte, band, kanaal, storing, beveiliging en de zwakste schakel.</p>`,
+ gen(){const [q,a,w,e]=pick(DIAG);return mc(q+' <b>Wat is de oorzaak?</b>',a,w,e,'Welke meting springt eruit? Vergelijk wifi met kabel.')}}
+];
+const EXI=Object.fromEntries(EX.map((e,i)=>[e.id,i]));
+function genUnique(ex,seen){for(let i=0;i<30;i++){const q=ex.gen();const k=q.q.replace(/<[^>]+>/g,'').slice(0,160);if(!seen.has(k)){seen.add(k);return q}}return ex.gen()}
+
+/* ------------------------------------------------------------------ theorie */
+const TH=[
+['Draadloze media',`<p>Bij wifi is de <b>lucht</b> het medium: gegevens reizen als <b>radiogolven</b>. Dat geeft andere eigenschappen dan een kabel:</p>
+<ul><li><b>Gedeeld medium</b>: alle toestellen op een kanaal delen de snelheid.</li><li><b>Half-duplex</b>: eerst luisteren, dan zenden (CSMA/CA).</li>
+<li><b>Verzwakking</b> door afstand, muren, metaal en water.</li><li><b>Storing</b> door buren en andere toestellen.</li><li><b>Beveiliging</b>: het signaal stopt niet aan de voordeur.</li></ul>
+<div class="tbl"><table><tr><th></th><th>UTP</th><th>Glasvezel</th><th>Wifi</th></tr><tr><td>Medium</td><td>elektrisch signaal</td><td>licht</td><td>radiogolven</td></tr>
+<tr><td>Afstand</td><td>max. 100 m</td><td>kilometers</td><td>meters tot tientallen meters</td></tr><tr><td>Storing</td><td>weinig</td><td>geen</td><td>veel</td></tr><tr><td>Mobiel</td><td>nee</td><td>nee</td><td>ja</td></tr></table></div>
+<p>Andere draadloze technologieën: Bluetooth (± 10 m), Zigbee/Thread (domotica), NFC (enkele cm), 4G/5G (km), straalverbinding (tussen gebouwen).</p>`],
+['Banden en kanalen',EX[1].learn+`<p>Een <b>DFS-kanaal</b> (5 GHz, kanalen 52 – 140) moet uitwijken als er radar is: het netwerk valt dan even weg.</p>`],
+['Signaalsterkte',EX[2].learn+`<p>Oorzaken van zwak signaal: afstand, beton, metaal (koelkast, radiator), spiegels en water, vloerverwarming, buren op hetzelfde kanaal, microgolfoven, een router in de meterkast of achter de tv.</p>`],
+['Wifi-standaarden',EX[0].learn+`<p>Nieuwe standaarden zijn <b>achterwaarts compatibel</b>: een oud toestel verbindt wel, maar aan zijn eigen (lage) snelheid.</p>
+<div class="tbl"><table><tr><th>Begrip</th><th>Betekenis</th></tr><tr><td>MIMO</td><td>meerdere antennes, meerdere datastromen (streams)</td></tr><tr><td>MU-MIMO</td><td>meerdere toestellen tegelijk bedienen</td></tr>
+<tr><td>OFDMA</td><td>kanaal opdelen voor veel kleine toestellen</td></tr><tr><td>Beamforming</td><td>signaal richten naar het toestel</td></tr><tr><td>Band steering</td><td>toestellen naar 5 GHz sturen</td></tr><tr><td>MLO</td><td>meerdere banden tegelijk (Wi-Fi 7)</td></tr></table></div>`],
+['Snelheid in de praktijk',EX[4].learn+EX[5].learn],
+['Netwerkapparaten',EX[8].learn+`<p>Tip: de kabel blijft koning. Ook bij mesh is een bekabelde verbinding tussen de nodes (<b>wired backhaul</b>) het snelst.</p>`],
+['Beveiliging en gastnetwerk',EX[6].learn+EX[7].learn+`<p>Niet verwarren: Telenet Wi-Free of Proximus Public Wi-Fi op je modem is een publiek netwerk van de provider, niet jouw gastnetwerk.</p>`]];
+
+/* ------------------------------------------------------------------ render */
+const app=$('#app');
+const done=id=>(S.prog[id]||0)>=NEED;
+const allDone=()=>EX.every(e=>done(e.id));
+const testOpen=()=>S.unlocked||allDone();
+const inTest=()=>S.test&&!S.test.done;
+
+function setMode(m){if(inTest()&&m!=='test')return;S.mode=m;save();render()}
+document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+$('#modes').addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;const ms=['theory','practice','lab','test'];let i=ms.indexOf(S.mode);i=(i+(e.key==='ArrowRight'?1:3))%4;setMode(ms[i]);$('#m-'+S.mode).focus()});
+
+function renderModes(){
+  document.querySelectorAll('.mode').forEach(b=>{const on=b.dataset.m===S.mode;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;b.disabled=inTest()&&b.dataset.m!=='test'});
+  $('#m-practice-n').textContent=EX.filter(e=>done(e.id)).length+'/'+EX.length;
+  $('#m-test-n').textContent=testOpen()?'open':'🔒';
+}
+function render(){renderModes();({theory:rTheory,practice:rPractice,lab:rLab,test:rTest})[S.mode]()}
+
+function side(items,curI,onPick,chips){
+  return `<div class="side" role="navigation">${items.map((t,i)=>`<button class="navi" data-i="${i}" aria-current="${i===curI}"><span class="lbl">${esc(t)}</span>${chips?chips(i):''}</button>`).join('')}</div>`;
+}
+function bindSide(fn){app.querySelectorAll('.navi').forEach(b=>b.addEventListener('click',()=>fn(+b.dataset.i)))}
+
+function rTheory(){
+  const [t,h]=TH[S.ch]||TH[0];
+  app.innerHTML=`<div class="layout">${side(TH.map(x=>x[0]),S.ch)}<section class="panel"><div class="eyebrow">Theorie · ${S.ch+1} van ${TH.length}</div><h2>${t}</h2><div class="prose">${h}</div>
+  <div class="actions">${S.ch>0?'<button class="btn ghost" id="prev">Vorige</button>':''}${S.ch<TH.length-1?'<button class="btn" id="next">Volgende</button>':'<button class="btn green" id="go">Naar Oefenen</button>'}</div></section></div>`;
+  bindSide(i=>{S.ch=i;save();rTheory()});
+  $('#prev')?.addEventListener('click',()=>{S.ch--;save();rTheory()});$('#next')?.addEventListener('click',()=>{S.ch++;save();rTheory()});$('#go')?.addEventListener('click',()=>setMode('practice'));
+}
+
+function chipFor(i){const id=EX[i].id,n=S.prog[id]||0;return `<span class="chip ${n>=NEED?'done':''}">${n>=NEED?'✓ ':''}${Math.min(n,NEED)}/${NEED}</span>`}
+
+function rPractice(){
+  const ex=EX[S.ex]||EX[0];
+  if(!cur||cur.ex!==ex.id){cur={ex:ex.id,q:ex.gen(),answered:false,hint:false,sel:null}}
+  const n=S.prog[ex.id]||0;
+  app.innerHTML=`<div class="layout">${side(EX.map(e=>e.title),S.ex,null,chipFor)}<section class="panel">
+   <div class="eyebrow">Oefening ${S.ex+1} van ${EX.length}</div><h2>${ex.title}</h2>
+   <div class="prog"><div class="dots">${Array.from({length:NEED},(_,i)=>`<span class="dot ${i<n?'on':''}"></span>`).join('')}</div><span class="small muted">${n>=NEED?`Voltooid · ${n} keer juist`:`Beantwoord ${NEED} vragen juist (bij de eerste poging) om deze oefening te voltooien.`}</span></div>
+   <details class="learn" ${n===0?'open':''}><summary>Uitleg</summary><div class="prose">${ex.learn}</div></details>
+   <div id="qhost"></div></section></div>`;
+  bindSide(i=>{S.ex=i;save();cur=null;rPractice()});
+  drawQ($('#qhost'),cur,{practice:true,onDone:ok=>{if(ok){S.prog[ex.id]=(S.prog[ex.id]||0)+1;save();renderModes();app.querySelectorAll('.navi .chip').forEach((c,i)=>c.outerHTML=chipFor(i));
+      const d=app.querySelectorAll('.dot');d.forEach((x,i)=>x.classList.toggle('on',i<S.prog[ex.id]))}},
+    onNext:()=>{cur={ex:ex.id,q:ex.gen(),answered:false,hint:false,sel:null};rPractice()},
+    onNextEx:()=>{const nx=EX.findIndex((e,i)=>i>S.ex&&!done(e.id));const j=nx>=0?nx:EX.findIndex(e=>!done(e.id));if(j<0){setMode('test');return}S.ex=j;save();cur=null;rPractice()}});
+}
+
+/* een vraag tekenen (oefenen en toets) */
+function drawQ(host,st,o){
+  const q=st.q;
+  host.innerHTML=`<div class="qcard"><div class="qtext">${q.q}</div>
+   ${q.type==='mc'?`<div class="opts" role="group" aria-label="Antwoorden">${q.opts.map((t,i)=>`<button class="opt" data-i="${i}">${esc(t)}</button>`).join('')}</div>`
+   :`<div class="numrow"><label for="numIn" class="small muted">Antwoord</label><input id="numIn" inputmode="decimal" autocomplete="off"><span>${esc(q.unit||'')}</span></div>`}
+   <div class="actions">${o.practice?`<button class="btn" id="check">Controleer</button>${q.hint?'<button class="btn ghost" id="hintB">Hint</button>':''}`:`<button class="btn" id="check">${o.last?'Toets afronden':'Volgende vraag'}</button>`}</div>
+   <div id="fbx"></div></div>`;
+  let sel=null;
+  host.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{if(st.answered)return;sel=+b.dataset.i;host.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b))}));
+  const inp=host.querySelector('#numIn');inp?.addEventListener('keydown',e=>{if(e.key==='Enter')host.querySelector('#check').click()});
+  host.querySelector('#hintB')?.addEventListener('click',()=>{st.hint=true;host.querySelector('#fbx').innerHTML=`<div class="fb hint"><b class="t">Hint</b><div>${q.hint}</div></div>`});
+  host.querySelector('#check').addEventListener('click',()=>{
+    if(st.answered){return}
+    let ok;
+    if(q.type==='mc'){if(sel==null){flash('Kies eerst een antwoord.');return}ok=sel===q.a}
+    else{const v=parseNum(inp.value);if(isNaN(v)){flash('Vul een getal in.');return}ok=Math.abs(v-q.a)<=q.tol}
+    if(!o.practice){o.onAnswer(ok,q.type==='mc'?q.opts[sel]:inp.value);return}
+    st.answered=true;
+    if(q.type==='mc')host.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.a)b.classList.add('right');else if(i===sel)b.classList.add('wrong')});else inp.disabled=true;
+    const counted=ok;
+    host.querySelector('#fbx').innerHTML=`<div class="fb ${ok?'ok':'no'}"><b class="t">${ok?'Juist!':'Niet juist.'}</b>${q.type==='num'&&!ok?`<div>Het juiste antwoord is <b>${nl(q.a,q.a%1?1:0)} ${esc(q.unit||'')}</b>.</div>`:''}<div>${q.expl}</div></div>`;
+    host.querySelector('.actions').innerHTML=`<button class="btn" id="nextQ">Nieuwe vraag</button>`;
+    o.onDone(counted);
+    const n=S.prog[st.ex]||0;if(n>=NEED){host.querySelector('.actions').insertAdjacentHTML('beforeend',`<button class="btn green" id="nextEx">${allDone()?'Naar de eindtoets':'Volgende oefening'}</button>`);host.querySelector('#nextEx').addEventListener('click',o.onNextEx)}
+    host.querySelector('#nextQ').addEventListener('click',o.onNext);host.querySelector('#nextQ').focus();
+  });
+  function flash(m){host.querySelector('#fbx').innerHTML=`<div class="fb hint"><div>${m}</div></div>`}
+}
+
+/* ------------------------------------------------------------------ praktijk */
+const SAMPLE={own:{ssid:'Thuis',ch:6,w:40,b5:36},nets:[{ssid:'telenet-4F2A1',ch:6,dbm:-66},{ssid:'Proximus-Home-77B3',ch:7,dbm:-70},{ssid:'Wi-Free',ch:6,dbm:-67},{ssid:'Orange-Home',ch:1,dbm:-79},{ssid:'DIRECT-HP-Printer',ch:11,dbm:-55}],
+ meas:[{p:'Woonkamer',dbm:-48,dl:310},{p:'Keuken',dbm:-64,dl:120},{p:'Slaapkamer 2e verdieping',dbm:-79,dl:14}]};
+function blankLab(){return {name:'',klas:'',own:{ssid:'',ch:'',w:20,b5:''},nets:Array.from({length:6},()=>({ssid:'',ch:'',dbm:''})),meas:Array.from({length:3},()=>({p:'',dbm:'',dl:''})),sample:false,result:null}}
+function rLab(){
+  if(!S.lab)S.lab=blankLab();const L=S.lab;
+  app.innerHTML=`<section class="panel"><div class="eyebrow">Praktijk</div><h2>Wifi-scan van je eigen omgeving</h2>
+  <div class="prose"><p>Scan thuis of op het werk met een wifi-scanner: <i>WiFi Analyzer</i> (Android), <i>NetSpot</i> of <i>WiFi Explorer</i> (Windows/macOS), of op Windows het commando <b>netsh wlan show networks mode=bssid</b>. Vul je metingen in. De app berekent het beste kanaal en beoordeelt je signaal. Neem een screenshot van het verslag.</p></div>
+  <div class="actions"><button class="btn ghost" id="sample">Voorbeeldgegevens laden</button><button class="btn ghost" id="clear">Leegmaken</button></div>
+  ${L.sample?'<div class="fb hint"><div>Je werkt met <b>voorbeeldgegevens</b>. Het verslag vermeldt dat.</div></div>':''}
+  <div class="grid2"><div class="field"><label for="l-name">Naam</label><input id="l-name" value="${esc(L.name)}"></div><div class="field"><label for="l-klas">Klas / groep</label><input id="l-klas" value="${esc(L.klas)}"></div></div>
+  <h3>1. Je eigen netwerk</h3>
+  <div class="grid2"><div class="field"><label for="o-ssid">Netwerknaam (SSID)</label><input id="o-ssid" value="${esc(L.own.ssid)}"></div>
+   <div class="field"><label for="o-ch">Kanaal op 2,4 GHz</label><input id="o-ch" inputmode="numeric" value="${esc(L.own.ch)}"></div>
+   <div class="field"><label for="o-w">Kanaalbreedte 2,4 GHz</label><select id="o-w"><option value="20" ${L.own.w==20?'selected':''}>20 MHz</option><option value="40" ${L.own.w==40?'selected':''}>40 MHz</option><option value="0" ${L.own.w==0?'selected':''}>weet ik niet</option></select></div>
+   <div class="field"><label for="o-b5">Kanaal op 5 GHz (indien gekend)</label><input id="o-b5" inputmode="numeric" value="${esc(L.own.b5)}"></div></div>
+  <h3>2. Andere netwerken op 2,4 GHz</h3>
+  <div class="tbl"><table><tr><th>SSID</th><th style="width:110px">Kanaal</th><th style="width:130px">Signaal (dBm)</th></tr>
+   ${L.nets.map((n,i)=>`<tr><td><input aria-label="SSID ${i+1}" data-n="${i}" data-k="ssid" value="${esc(n.ssid)}"></td><td><input aria-label="Kanaal ${i+1}" inputmode="numeric" data-n="${i}" data-k="ch" value="${esc(n.ch)}"></td><td><input aria-label="Signaal ${i+1}" inputmode="numeric" data-n="${i}" data-k="dbm" value="${esc(n.dbm)}" placeholder="-65"></td></tr>`).join('')}</table></div>
+  <div class="actions"><button class="btn ghost" id="addNet">Rij toevoegen</button></div>
+  <h3>3. Metingen op drie plaatsen</h3>
+  <div class="tbl"><table><tr><th>Plaats</th><th style="width:130px">Signaal (dBm)</th><th style="width:150px">Download (Mbit/s)</th></tr>
+   ${L.meas.map((m,i)=>`<tr><td><input aria-label="Plaats ${i+1}" data-m="${i}" data-k="p" value="${esc(m.p)}"></td><td><input aria-label="Signaal plaats ${i+1}" inputmode="numeric" data-m="${i}" data-k="dbm" value="${esc(m.dbm)}" placeholder="-60"></td><td><input aria-label="Download plaats ${i+1}" inputmode="decimal" data-m="${i}" data-k="dl" value="${esc(m.dl)}"></td></tr>`).join('')}</table></div>
+  <div class="actions"><button class="btn green" id="analyse">Analyseer</button></div><div id="labErr"></div><div id="labOut"></div></section>`;
+  const sync=()=>{L.name=$('#l-name').value;L.klas=$('#l-klas').value;L.own={ssid:$('#o-ssid').value,ch:$('#o-ch').value,w:+$('#o-w').value,b5:$('#o-b5').value};
+    app.querySelectorAll('[data-n]').forEach(x=>L.nets[+x.dataset.n][x.dataset.k]=x.value);app.querySelectorAll('[data-m]').forEach(x=>L.meas[+x.dataset.m][x.dataset.k]=x.value);save()};
+  app.querySelectorAll('input,select').forEach(x=>x.addEventListener('change',()=>{sync();L.result=null;save()}));
+  $('#sample').addEventListener('click',()=>{sync();const nm=L.name,kl=L.klas;S.lab=JSON.parse(JSON.stringify(Object.assign(blankLab(),SAMPLE,{sample:true,name:nm,klas:kl})));S.lab.nets=S.lab.nets.map(n=>({ssid:n.ssid,ch:String(n.ch),dbm:String(n.dbm)}));S.lab.meas=S.lab.meas.map(m=>({p:m.p,dbm:String(m.dbm),dl:String(m.dl)}));S.lab.own={ssid:'Thuis',ch:'6',w:40,b5:'36'};save();rLab()});
+  $('#clear').addEventListener('click',()=>{const nm=$('#l-name').value,kl=$('#l-klas').value;S.lab=Object.assign(blankLab(),{name:nm,klas:kl});save();rLab()});
+  $('#addNet').addEventListener('click',()=>{sync();L.nets.push({ssid:'',ch:'',dbm:''});save();rLab()});
+  $('#analyse').addEventListener('click',()=>{sync();const err=[];
+    const own=parseInt(L.own.ch);if(!(own>=1&&own<=13))err.push('Vul het kanaal van je eigen netwerk in (1 – 13).');
+    const nets=L.nets.filter(n=>n.ssid||n.ch||n.dbm).map(n=>({ssid:n.ssid||'(geen naam)',ch:parseInt(n.ch),dbm:parseInt(String(n.dbm).replace('+','')),w:20}));
+    nets.forEach(n=>{if(!(n.ch>=1&&n.ch<=13))err.push(`Kanaal van ${n.ssid} ontbreekt of is fout (1 – 13).`);if(!(n.dbm<=-20&&n.dbm>=-100))err.push(`Signaal van ${n.ssid} moet tussen -20 en -100 dBm liggen (negatief getal).`)});
+    if(nets.length<1)err.push('Vul minstens één ander netwerk in. Zie je er geen? Noteer dat bij je leerkracht.');
+    const meas=L.meas.filter(m=>m.p||m.dbm||m.dl).map(m=>({p:m.p||'(plaats)',dbm:parseInt(m.dbm),dl:parseNum(m.dl)}));
+    meas.forEach(m=>{if(!(m.dbm<=-20&&m.dbm>=-100))err.push(`Signaal in ${m.p} moet tussen -20 en -100 dBm liggen.`)});
+    if(meas.length<3)err.push('Vul drie metingen in.');
+    if(!L.name.trim()||!L.klas.trim())err.push('Vul je naam en klas in.');
+    $('#labErr').innerHTML=err.length?`<div class="fb no"><b class="t">Nog niet volledig</b><div>${err.map(esc).join('<br>')}</div></div>`:'';
+    if(err.length){$('#labOut').innerHTML='';return}
+    const L3=[1,6,11].map(k=>({k,...chanLoad(nets,k)})).sort((a,b)=>a.s-b.s);const best=L3[0].k;
+    const ownLoad=chanLoad(nets,own);const ownIsBest=[1,6,11].includes(own)&&(own===best||ownLoad.s<=L3[0].s*1.5);
+    const adv=[];
+    if(![1,6,11].includes(own))adv.push(`Je netwerk staat op kanaal ${own}: dat overlapt met twee ‘niet-overlappende’ kanalen. Kies 1, 6 of 11.`);
+    if(L.own.w===40)adv.push('Je gebruikt 40 MHz op 2,4 GHz: dat neemt bijna de halve band in. Zet de breedte op 20 MHz.');
+    adv.push(ownIsBest?`Kanaal ${own} is een goede keuze.`:`Zet je 2,4 GHz-netwerk op <b>kanaal ${best}</b>: daar is de minste overlap.`);
+    const b5=parseInt(L.own.b5);if(b5>=52&&b5<=144)adv.push(`Op 5 GHz gebruik je kanaal ${b5}, een DFS-kanaal: het netwerk kan even wegvallen als er radar is. Wil je dat vermijden, kies dan 36 – 48.`);
+    const weak=meas.filter(m=>m.dbm<-67);if(weak.length)adv.push(`Zwak signaal in: ${weak.map(m=>esc(m.p)).join(', ')}. Denk aan een betere plaats voor de router, een access point met kabel of een mesh-node.`);
+    const rows=meas.map(m=>{const z=zoneOf(m.dbm);return `<tr><td>${esc(m.p)}</td><td>${m.dbm} dBm</td><td class="${z==='Uitstekend'||z==='Goed'?'ok-t':z==='Matig'?'warn-t':'bad-t'}">${z}</td><td>${isNaN(m.dl)?'—':nl(m.dl,m.dl%1?1:0)+' Mbit/s'}</td></tr>`}).join('');
+    const code=hash(`${norm(L.name)}|${norm(L.klas)}|${best}|${own}|${meas.map(m=>m.dbm).join(',')}|${L.sample?1:0}|${SECRET}`);
+    const viz=nets.concat([{ssid:(L.own.ssid||'Eigen netwerk')+' (jij)',ch:own,dbm:-45,w:L.own.w===40?40:20,own:true}]);
+    $('#labOut').innerHTML=`<div class="report"><div class="eyebrow">Verslag praktijk · Wifilab</div>
+     <div class="grid2"><div><div class="muted small">Naam</div><b>${esc(L.name)}</b></div><div><div class="muted small">Klas</div><b>${esc(L.klas)}</b></div><div><div class="muted small">Datum</div><b>${new Date().toLocaleString('nl-BE',{dateStyle:'short',timeStyle:'short'})}</b></div><div><div class="muted small">Verslagcode</div><span class="code">${code}</span></div></div>
+     ${L.sample?'<div class="warn-t">Gemaakt met voorbeeldgegevens</div>':''}
+     <h3>Kanalen op 2,4 GHz</h3>${chanSVG(viz,true)}
+     <div class="tbl"><table><tr><th>Kanaal</th><th>Overlappende netwerken</th></tr>${[1,6,11].map(k=>{const r=L3.find(x=>x.k===k);return `<tr><td>${k}${k===best?' <span class="ok-t">beste</span>':''}</td><td>${r.hits.length?r.hits.map(h=>`${esc(h.ssid)} (${h.dbm} dBm)`).join(', '):'geen'}</td></tr>`}).join('')}</table></div>
+     <h3>Metingen</h3><div class="tbl"><table><tr><th>Plaats</th><th>Signaal</th><th>Beoordeling</th><th>Download</th></tr>${rows}</table></div>
+     <h3>Advies</h3><ul class="prose" style="padding-left:1.2em;margin:0">${adv.map(a=>`<li>${a}</li>`).join('')}</ul></div>`;
+    $('#labOut').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+
+/* ------------------------------------------------------------------ eindtoets */
+let blurBound=false;
+function bindBlur(){if(blurBound)return;blurBound=true;const f=()=>{if(inTest()&&S.test.started){S.test.blur=(S.test.blur||0)+1;save()}};document.addEventListener('visibilitychange',()=>{if(document.hidden)f()})}
+function rTest(){
+  if(!testOpen()){
+    app.innerHTML=`<section class="panel"><div class="eyebrow">Eindtoets</div><h2>Eerst alle oefeningen voltooien</h2>
+    <p class="muted">Beantwoord bij elke oefening minstens ${NEED} vragen juist in het onderdeel Oefenen. Dan gaat de eindtoets open.</p>
+    <div class="lock">${EX.map((e,i)=>`<div class="lockrow"><span>${esc(e.title)}</span><span class="actions">${chipFor(i)}${done(e.id)?'':`<button class="btn ghost" data-go="${i}">Oefen</button>`}</span></div>`).join('')}</div></section>`;
+    app.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{S.ex=+b.dataset.go;cur=null;setMode('practice')}));return}
+  const T=S.test;
+  if(!T||T.done&&T.view==='intro'){
+    const prev=T&&T.done?`<p class="small muted">Je vorige poging: ${T.score}/${T.qs.length}. Een nieuwe poging telt als poging ${S.attempts+1}.</p><div class="actions"><button class="btn ghost" id="showRep">Vorig rapport tonen</button></div>`:'';
+    app.innerHTML=`<section class="panel"><div class="eyebrow">Eindtoets</div><h2>Klaar voor de eindtoets</h2>
+    <div class="prose"><p>De eindtoets heeft <b>${EX.length*PER_EX} vragen</b>: ${PER_EX} per oefening. Elke vraag is 1 punt. Je krijgt geen hints en je kan niet terug naar een vorige vraag.</p>
+    <p>Tijdens de toets zijn Theorie, Oefenen en Praktijk gesloten. Als je het venster verlaat, wordt dat genoteerd.</p><p>Aan het einde krijg je een rapport. <b>Neem daar een screenshot van</b> en lever het in bij je leerkracht.</p></div>
+    ${prev}
+    <div class="grid2"><div class="field"><label for="t-name">Naam</label><input id="t-name" value="${esc(S.lab?.name||'')}"></div><div class="field"><label for="t-klas">Klas / groep</label><input id="t-klas" value="${esc(S.lab?.klas||'')}"></div></div>
+    <div class="actions"><button class="btn green" id="start">Start de eindtoets</button></div><div id="tErr"></div></section>`;
+    $('#showRep')?.addEventListener('click',()=>{S.test.view='report';save();rTest()});
+    $('#start').addEventListener('click',()=>{const name=$('#t-name').value.trim(),klas=$('#t-klas').value.trim();if(!name||!klas){$('#tErr').innerHTML='<div class="fb no"><div>Vul je naam en klas in.</div></div>';return}
+      const qs=[];EX.forEach(e=>{const seen=new Set();for(let i=0;i<PER_EX;i++){const q=genUnique(e,seen);qs.push(Object.assign({ex:e.id},q))}});
+      S.attempts=(S.attempts||0)+1;S.test={name,klas,qs,i:0,ans:[],start:Date.now(),blur:0,attempt:S.attempts,done:false,started:true};save();bindBlur();renderModes();rTest()});
+    return}
+  if(T.done){rReport();return}
+  bindBlur();
+  const q=T.qs[T.i];
+  app.innerHTML=`<section class="panel"><div class="prog" style="justify-content:space-between"><div class="eyebrow">Eindtoets · vraag ${T.i+1} van ${T.qs.length}</div><span class="small muted">${esc(EX[EXI[q.ex]].title)}</span></div>
+   <div style="height:6px;background:var(--sunk);border-radius:3px;overflow:hidden"><div style="height:100%;width:${T.i/T.qs.length*100}%;background:var(--green)"></div></div><div id="qhost"></div></section>`;
+  drawQ($('#qhost'),{q,answered:false},{practice:false,last:T.i===T.qs.length-1,onAnswer:(ok,given)=>{T.ans.push({ok,given});T.i++;
+    if(T.i>=T.qs.length){T.done=true;T.end=Date.now();T.score=T.ans.filter(a=>a.ok).length;T.view='report';T.code=reportCode(T)}save();renderModes();rTest();window.scrollTo({top:0})}});
+}
+function reportCode(T){return hash(`${norm(T.name)}|${norm(T.klas)}|${T.score}|${T.attempt}|${SECRET}`)}
+function rReport(){
+  const T=S.test,dur=Math.round((T.end-T.start)/1000),pct=Math.round(T.score/T.qs.length*100);
+  const per=EX.map(e=>{const idx=T.qs.map((q,i)=>q.ex===e.id?i:-1).filter(i=>i>=0);return [e.title,idx.filter(i=>T.ans[i]?.ok).length,idx.length]});
+  app.innerHTML=`<section class="panel"><div class="report"><div class="eyebrow">Rapport eindtoets · Wifilab · draadloze netwerken</div>
+   <div class="grid2"><div><div class="muted small">Naam</div><b>${esc(T.name)}</b></div><div><div class="muted small">Klas</div><b>${esc(T.klas)}</b></div>
+   <div><div class="muted small">Datum</div><b>${new Date(T.end).toLocaleString('nl-BE',{dateStyle:'short',timeStyle:'short'})}</b></div><div><div class="muted small">Controlecode</div><span class="code">${T.code}</span></div></div>
+   <div class="prog"><span class="big">${T.score}/${T.qs.length}</span><span class="${pct>=50?'ok-t':'bad-t'}">${pct} %</span></div>
+   <div class="tbl"><table><tr><th>Onderdeel</th><th>Score</th></tr>${per.map(p=>`<tr><td>${esc(p[0])}</td><td>${p[1]}/${p[2]}</td></tr>`).join('')}</table></div>
+   <div class="grid2 small"><div>Duur: <b>${Math.floor(dur/60)} min ${dur%60} s</b></div><div>Poging: <b>${T.attempt}</b></div><div>Venster verlaten: <b>${T.blur||0} keer</b></div>${S.unlocked&&!allDone()?'<div class="warn-t">Toets ontgrendeld door leerkracht</div>':''}</div></div>
+   <p class="muted">Neem een screenshot van dit rapport en lever het in.</p>
+   <details class="learn"><summary>Mijn antwoorden bekijken</summary><div class="prose">${T.qs.map((q,i)=>`<div style="border-bottom:1px solid var(--line);padding-block:8px"><div class="small muted">Vraag ${i+1} · ${T.ans[i]?.ok?'<span class="ok-t">juist</span>':'<span class="bad-t">fout</span>'}</div><div>${q.q.replace(/<div class="tbl">[\s\S]*?<\/div>|<svg[\s\S]*?<\/svg>/g,' [tabel] ')}</div><div class="small">Jouw antwoord: ${esc(T.ans[i]?.given??'')} · Juist: <b>${q.type==='mc'?esc(q.opts[q.a]):nl(q.a,q.a%1?1:0)+' '+esc(q.unit||'')}</b></div></div>`).join('')}</div></details>
+   <div class="actions"><button class="btn ghost" id="again">Nieuwe poging</button><button class="btn" id="toPractice">Verder oefenen</button></div></section>`;
+  $('#again').addEventListener('click',()=>{S.test.view='intro';save();rTest()});
+  $('#toPractice').addEventListener('click',()=>setMode('practice'));
+}
+
+/* ------------------------------------------------------------------ leerkracht */
+$('#teacherBtn').addEventListener('click',()=>teacher(false));
+function teacher(authed){
+  const M=$('#modal');
+  if(!authed){M.innerHTML=`<div class="overlay" id="ov"><form class="dialog" id="tf"><h2>Leerkracht</h2><div class="field"><label for="tcode">Leerkrachtcode</label><input id="tcode" type="password" inputmode="numeric" autocomplete="off"></div><div id="terr"></div><div class="actions"><button class="btn" type="submit">Openen</button><button class="btn ghost" type="button" id="tclose">Sluiten</button></div></form></div>`;
+    $('#tcode').focus();$('#tclose').addEventListener('click',()=>M.innerHTML='');
+    $('#tf').addEventListener('submit',e=>{e.preventDefault();if($('#tcode').value.trim()===TEACHER_CODE)teacher(true);else $('#terr').innerHTML='<div class="fb no"><div>Deze code klopt niet.</div></div>'});return}
+  M.innerHTML=`<div class="overlay"><div class="dialog"><h2>Leerkracht</h2>
+   <h3>Eindtoets</h3><p class="small muted">Status: ${allDone()?'alle oefeningen voltooid':EX.filter(e=>done(e.id)).length+'/'+EX.length+' oefeningen voltooid'} · ${S.unlocked?'ontgrendeld door leerkracht':'niet manueel ontgrendeld'}</p>
+   <div class="actions"><button class="btn" id="unl">${S.unlocked?'Ontgrendeling intrekken':'Toets ontgrendelen op dit toestel'}</button></div>
+   <h3>Rapportcode controleren</h3>
+   <form id="vf" class="grid2"><div class="field"><label for="v-n">Naam</label><input id="v-n"></div><div class="field"><label for="v-k">Klas</label><input id="v-k"></div>
+   <div class="field"><label for="v-s">Score</label><input id="v-s" inputmode="numeric"></div><div class="field"><label for="v-p">Poging</label><input id="v-p" inputmode="numeric"></div>
+   <div class="field"><label for="v-c">Controlecode</label><input id="v-c" autocomplete="off"></div><div class="field" style="justify-content:flex-end"><button class="btn" type="submit">Controleer</button></div></form><div id="vres"></div>
+   <h3>Voortgang wissen</h3><p class="small muted">Wist oefeningen, praktijk en toetsen op dit toestel.</p><div class="actions" id="wipeA"><button class="btn danger" id="wipe">Alles wissen</button></div>
+   <div class="actions"><button class="btn ghost" id="tclose">Sluiten</button></div></div></div>`;
+  $('#tclose').addEventListener('click',()=>M.innerHTML='');
+  $('#unl').addEventListener('click',()=>{S.unlocked=!S.unlocked;save();render();teacher(true)});
+  $('#vf').addEventListener('submit',e=>{e.preventDefault();const c=hash(`${norm($('#v-n').value)}|${norm($('#v-k').value)}|${parseInt($('#v-s').value)}|${parseInt($('#v-p').value)}|${SECRET}`);
+    const ok=c===$('#v-c').value.trim().toUpperCase();$('#vres').innerHTML=`<div class="fb ${ok?'ok':'no'}"><div>${ok?'De code klopt bij deze naam, klas, score en poging.':'De code klopt niet. Controleer naam en klas (exact zoals op het rapport), score en poging.'}</div></div>`});
+  $('#wipe').addEventListener('click',()=>{$('#wipeA').innerHTML='<span class="bad-t">Zeker? Dit kan niet ongedaan worden.</span><button class="btn danger" id="wipe2">Ja, alles wissen</button><button class="btn ghost" id="wipeN">Annuleren</button>';
+    $('#wipeN').addEventListener('click',()=>teacher(true));
+    $('#wipe2').addEventListener('click',()=>{S={mode:'theory',ch:0,ex:0,prog:{},unlocked:false,attempts:0,test:null,lab:null};cur=null;save();M.innerHTML='';render()})});
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').innerHTML)$('#modal').innerHTML=''});
+
+if(inTest())S.mode='test';
+render();
+window.__wifilab={EX,chanLoad,hash,S:()=>S};
+})();
+</script>
+
+</body></html>
